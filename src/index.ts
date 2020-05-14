@@ -1,5 +1,6 @@
 // import './base/datatype.ts';
-import './base/func.ts'
+// import './base/func.ts'
+import './base/interface.ts';
 
 let hello: string = 'hello typescript';
 let app = document.querySelector('#app');
