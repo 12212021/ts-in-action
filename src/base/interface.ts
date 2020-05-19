@@ -94,3 +94,36 @@ interface Ok {
     [x: number]: Dog,
     [s: string]: Animal
 }
+
+
+
+
+
+// 接口约束类
+interface ClockInterface {
+    // 接口约束类的公共部分，不会检查类的私有部分
+    currentTime: Date,
+    setTime: (d: Date) => void
+}
+
+class Clock implements ClockInterface {
+    currentTime: Date
+    constructor(h: number, m: number) {
+
+    }
+
+    setTime(d: Date) {
+        this.currentTime = d;
+    }
+}
+
+// 接口只会对类的实例部分进行检查，不会检查静态部分
+interface ClockConstructor {
+    new (hour: number, minute: number): Clock1;
+}
+
+class Clock1 implements ClockConstructor {
+    // 类的构造函数属于静态部分，所以不在ts的检查范围内
+    constructor(h: number, m: number) { }
+}
+
