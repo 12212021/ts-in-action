@@ -127,3 +127,46 @@ class Clock1 implements ClockConstructor {
     constructor(h: number, m: number) { }
 }
 
+
+
+// 接口描述混合类型
+interface Counter {
+    (start: number): string;
+    interval: number;
+    reset(): void
+}
+
+function getCounter() : Counter {
+    // as 作为类型断言非常关键，能覆盖ts类型推断的一些不便之处
+    let counter = (function (start: number) {return start.toString()}) as Counter;
+    counter.interval = 12;
+    counter.reset = () => {};
+    return counter;
+}
+
+
+
+
+
+// 接口能继承类，接口会继承类所有的成员（共有、私有、受保护），但是不会继承实现
+class Control {
+    private state: string
+}
+
+interface SelectableControl extends Control {
+    select(): void
+}
+
+class Button extends Control implements SelectableControl {
+    select() {}
+}
+
+class TextBox extends Control {
+
+}
+
+// 接口继承了某个类的私有成员，那么只有该类或者该类的子类能够实现该接口
+class Image implements SelectableControl {
+    private state: string;
+    select() {}
+}
