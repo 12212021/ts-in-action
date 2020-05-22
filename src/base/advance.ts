@@ -135,7 +135,7 @@ function getLang(type: string): JavaScript | Java {
     return lang;
 }
 
-// 自定义的类型断言机制
+// 自定义的类型保护机制
 interface Fish {
     swim(): any;
     layEggs(): any;
@@ -172,3 +172,166 @@ function testTypeGuard() {
         pet.fly();
     }
 }
+
+// 使用switch语句进行类型保护
+interface Square {
+    kind: 'square';
+    size: number;
+}
+interface Rectangle {
+    kind: 'rectangle';
+    width: number;
+    height: number;
+}
+interface Circle {
+    kind: 'circle';
+    r: 1
+}
+
+type Shape = Square | Rectangle | Circle;
+// 函数switch语句并没有覆盖所有case，但是ts编译器没有报错，这里会有隐藏bug
+function getArea0(s: Shape) {
+    switch (s.kind) {
+        case 'square':
+            return s.size * s.size;
+        case 'rectangle':
+            return s.height * s.width;
+    }
+}
+// 明确标注返回值，没有覆盖全部情况下，ts会检测到返回值并不全是number从而报错
+function getArea1(s: Shape): number {
+    switch (s.kind) {
+        case 'square':
+            return s.size * s.size;
+        case 'rectangle':
+            return s.height * s.width;
+        // case 'circle':
+        //     return Math.PI * s.r * s.r;
+    }
+}
+// 使用default语句
+// 最后的never类型函数，当s的类型有漏网之鱼的时候，default语句会执行，s的类型必然不是never类型，从而报错
+function getArea2(s: Shape) {
+    switch (s.kind) {
+        case 'circle':
+            return Math.PI * s.r * s.r;
+        case 'rectangle':
+            return s.height * s.width;
+        // case 'square':
+        //     return s.size * s.size
+        default:
+            const exhaustiveCheck: never = s;
+            return exhaustiveCheck;
+    }
+}
+
+
+
+// 联合类型和交叉类型
+
+// 1）联合类型
+// 表示unionType可以是number、string中的一个，只能取number和stirng中的公共方法
+// 通常Union Type会涉及到类型断言、类型保护等机制
+let unionTypeTest: number | string;
+unionTypeTest = 1;
+unionTypeTest = '123';
+
+// 2）交叉类型
+// 交叉类型允许你将多个类型表示为一个，可以使用这个多个类型方法属性
+class Person {
+    constructor(public name: string) { }
+}
+
+interface Loggable {
+    log(name: string): void
+}
+
+function testIntersectionType(obj: Person & Loggable): void {
+    // obj是person和Loggable的联合类型，可以认为是二者的儿子，可以访问父类的所有方法属性
+    obj.log(obj.name);
+}
+
+
+
+
+// 索引类型
+// keyof T返回T多有key的类型，是一个联合类型 key1 | key2 | key3
+// T[K] 返回以KWie索引的T对应的值的类型
+interface Car {
+    manufacturer: string;
+    modal: string;
+    year: number;
+}
+
+let taxi: Car = {
+    manufacturer: 'Toyota',
+    modal: 'Camray',
+    year: 2017
+}
+
+function pluck<T, K extends keyof T>(o: T, keys: K[]): T[K][] {
+    return keys.map(e => o[e]);
+}
+
+
+
+
+// 映射类型
+// 可以任务是以一个类型为参数的函数，返回另外的一个类型
+interface PersonPartial {
+    name?: string,
+    age?: number
+}
+
+type ReadonlySelf<T> = {
+    readonly [K in keyof T]: T[K]
+}
+type ReadonlyPerson = ReadonlySelf<PersonPartial>
+
+type Patial<T> = {
+    [K in keyof T]?: T[K]
+}
+// 上面的类型都是同质的，没有引入额外的property
+// 下面的类型是非同质的，引入和额外的key
+type RecordPersonPartial = Record<'x' | 'y', PersonPartial>
+// keyof any是 number | string | symbol的联合类型，js中key的类型只能为这三个
+type TsKeyType = keyof any
+
+
+
+
+
+
+// 条件类型
+// T extends U ? X : Y 表示如果T类型可以赋值给U类型，则返回X类型，否则Y类型
+type TypeName<T> =
+    T extends string ? 'string' :
+    T extends number ? 'number' :
+    T extends boolean ? 'boolean' :
+    T extends undefined ? 'undefined' :
+    T extends Function ? 'function' : 'object'
+
+type T0 = TypeName<string>;
+type T1 = TypeName<'a'>;
+type T2 = TypeName<2>
+type T3 = TypeName<true>
+type T4 = TypeName<undefined>
+type T5 = TypeName<null>
+type T6 = TypeName<() => {}>
+// 联合类型的条件运算符
+// T extends U ? X : Y
+// 如果T= A | B | C  该运算解析为 (A extends U ? X :Y) | (B extends U ? X : Y) | (C extends U ? X : Y)
+type T7 = TypeName<2 | '2'>
+// infer关键字引用
+// infer用来引用出入的类型
+type ReturnTypeSelf<T> = T extends (...args: any[]) => infer U ? U : any;
+type R0 = ReturnTypeSelf<() => number>
+// infer example2
+type UnpackSelf<T> =
+    T extends (infer U)[] ? U :
+    T extends (...args: any[]) => infer U ? U :
+    T extends Promise<infer U> ? U : T;
+type U0 = UnpackSelf<string[]>;
+type U1 = UnpackSelf<() => string>;
+type U2 = UnpackSelf<Promise<number>>;
+// ts在lib.es5.d.ts文件中内置了很多比较有用的类型运算符
