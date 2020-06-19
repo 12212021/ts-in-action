@@ -49,27 +49,11 @@ t3th = t1th; // t1是t3的子集
 t4th = t2th; // t2是t4的子集
 t3th = t2th; // t2是t4的子集
 
-let fnth1: () => number;
-let fnth2: (x: number) => number;
+let fnth1: (x: number) => number;
+let fnth2: (x: number, s: string) => number;
 
 fnth2 = fnth1;
-// 这个类型描述类似于
-/* 
-fnth1
-key:never
-value: number
-类似于如下
-interface {
-    never: number
-}
-
-fnth2
-key: number
-value: number
-类似于如下
-interface {
-    [index in number]: number
-}
-
-所以fnth1是fnth2的子集
+/* 函数的参数中，参数是逆变的，返回值是协变的 
+1、key1 < key2（key1是key2的子集），value1 = value2  =>  entry1 > entry2
+2、key1 = key2， value1 < value2 => entry1 < entry2
 */
