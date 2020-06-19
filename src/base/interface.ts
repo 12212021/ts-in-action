@@ -22,6 +22,25 @@ function createSquare(config: SquareConfig): { color: string; area: number } {
 }
 console.log(createSquare({}));
 
+//ts会对对象字面量进行额外的检查，
+createSquare({colour: 'red', width: 100});
+// 1、as关键字
+createSquare({colour: 'red', width: 100} as SquareConfig);
+// 2、将接口的前面更改为如下
+/* 
+interface {
+    color?: string,
+    width?: string,
+    [propName: string]: any
+}
+*/
+// 3、通过变量赋值的情况绕过
+let config = { colour: 'red', width: 100 };
+// 如果不是对象字面，会绕过额外的属性check
+let mySquare1 = createSquare(config);
+
+
+
 
 // 只读属性
 interface Point {
@@ -31,14 +50,6 @@ interface Point {
 
 let p1: Point = { x: 10, y: 20 };
 // p1.x = 2; 不能给只读属性赋值
-
-
-// 对象字面量的额外的属性check
-// let mySquare = createSquare({ colour: 'red', width: 100 });
-let config = { colour: 'red', width: 100 };
-// 如果不是对象字面，会绕过额外的属性check
-let mySquare1 = createSquare(config);
-
 
 
 
@@ -64,7 +75,15 @@ mySearch = function (source: string, subString: string) {
 
 
 
-// 接口约束可索引类型，一般是数组
+/* 
+接口约束可索引类型
+ts可索引类型约束的本质是约束一个对象的key、value的类型
+数组是一种特殊的对象，所以也可以用可索引类型来约束
+
+1、js中对象的key只能是string，即使是数组的key在运行时也会被转化为string
+这约束ts可索引类型的key只能为string、number两种类型
+
+*/
 // 索引的类型被约束为string、number两种类型
 interface StringArray {
     // 索引是number类型，value是string类型
