@@ -73,3 +73,36 @@ highFuncth(fnth2, 1, 2);
 这里类型是兼容的，函数类型兼容的一般性应用场景在于高阶函数（将某个A函数作为参数或者作为返回值） 
 A函数一般在高阶函数内部要发生调用
  */
+
+
+
+//  never类型的使用
+interface Foo {
+    type: 'foo'
+}
+
+interface Bar {
+    type: 'bar'
+}
+
+type All = Foo | Bar;
+
+function handleVal(val: All) {
+    switch (val.type) {
+        case 'foo':
+            // 这里 val 被收窄为 foo
+            break;
+        case 'bar':
+            // 这里类型被收窄为bar
+            break;
+        default:
+            const neverReach: never = val;
+            break;
+    }
+}
+
+/*
+如果有一天
+type All = Foo | Bar | Baz
+handleVal函数中忘记增加针对Baz的处理逻辑，ts编译器会报错
+ */
